@@ -34,7 +34,9 @@ fn main() -> Result<()> {
     }
 
     tui.close()?;
-    print!("{}", app.get_selected());
+    if app.submitted {
+        print!("{}", app.get_selected());
+    }
 
     Ok(())
 }

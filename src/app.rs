@@ -3,9 +3,10 @@ use std::{fs, path::PathBuf};
 
 #[derive(Default)]
 pub struct App {
-    pub should_quit: bool,
     pub dirs: Vec<String>,
     pub list_state: ListState,
+    pub should_quit: bool,
+    pub submitted: bool,
 
     root_dir: PathBuf,
     stopper: PathBuf,
@@ -46,6 +47,10 @@ impl App {
         &self.dirs[self.list_state.selected().unwrap()]
     }
 
+    pub fn submit(&mut self) {
+        self.submitted = true;
+        self.should_quit = true;
+    }
     pub fn quit(&mut self) {
         self.should_quit = true;
     }

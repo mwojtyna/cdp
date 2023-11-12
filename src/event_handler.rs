@@ -17,17 +17,17 @@ impl EventHandler {
             if let Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
                     match key.code {
-                        KeyCode::Char('q') => {
-                            app.quit();
-                        }
                         KeyCode::Char('j') => {
                             app.next();
                         }
                         KeyCode::Char('k') => {
                             app.prev();
                         }
-                        KeyCode::Enter => {
+                        KeyCode::Char('q') => {
                             app.quit();
+                        }
+                        KeyCode::Enter => {
+                            app.submit();
                         }
                         _ => {}
                     }
