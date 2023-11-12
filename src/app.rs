@@ -1,12 +1,16 @@
 use ratatui::widgets::ListState;
 use std::{fs, path::PathBuf};
+use tui_input::Input;
 
 #[derive(Default)]
 pub struct App {
     pub dirs: Vec<String>,
-    pub list_state: ListState,
+    pub filtered_dirs: Vec<String>,
     pub should_quit: bool,
     pub submitted: bool,
+
+    pub list_state: ListState,
+    pub input_state: Input,
 
     root_dir: PathBuf,
     stopper: PathBuf,
@@ -25,7 +29,29 @@ impl App {
         }
     }
     pub fn find_projects(&mut self) {
-        self.dirs = self.get_dirs(self.root_dir.clone());
+        self.dirs = self.get_dirs(&self.root_dir);
+        self.dirs.sort();
+        self.filtered_dirs = self.dirs.clone();
+    }
+
+    pub fn filter(&mut self) {
+        self.filtered_dirs = self
+            .dirs
+            .iter()
+            .filter(|dir| dir.contains(self.input_state.value()))
+            .map(|dir| dir.to_string())
+            .collect();
+
+        let last_filtered = self.filtered_dirs.len().saturating_sub(1);
+        if self.list_state.selected().unwrap() > last_filtered {
+            self.list_state.select(Some(last_filtered));
+        }
+    }
+    pub fn get_selected(&self) -> &String {
+        &self.filtered_dirs[self
+            .list_state
+            .selected()
+            .expect("Nothing is selected. This should never happen.")]
     }
 
     pub fn next(&mut self) {
@@ -43,9 +69,6 @@ impl App {
 
         self.list_state.select(Some(selected))
     }
-    pub fn get_selected(&self) -> &String {
-        &self.dirs[self.list_state.selected().unwrap()]
-    }
 
     pub fn submit(&mut self) {
         self.submitted = true;
@@ -56,8 +79,8 @@ impl App {
     }
 
     // TODO: Parallelize
-    fn get_dirs(&self, current: PathBuf) -> Vec<String> {
-        if let Ok(entries) = fs::read_dir(&current) {
+    fn get_dirs(&self, current: &PathBuf) -> Vec<String> {
+        if let Ok(entries) = fs::read_dir(current) {
             let dirs: Vec<PathBuf> = entries
                 .filter_map(|entry| entry.ok().map(|entry| entry.path()))
                 .filter(|entry| entry.is_dir())
@@ -67,7 +90,11 @@ impl App {
                 .iter()
                 // It's safe to unwrap because only a file can have a name of '..'
                 // https://doc.rust-lang.org/std/path/struct.Path.html#method.file_name
-                .any(|dir| dir.file_name().expect("This should never happen") == self.stopper)
+                .any(|dir| {
+                    dir.file_name()
+                        .expect("The directory name is invalid. This should never happen.")
+                        == self.stopper
+                })
             {
                 // If the current dir has STOPPER, add it
                 let path_string = current.to_string_lossy().to_string();
@@ -75,7 +102,7 @@ impl App {
             } else {
                 // If the current dir doesn't have STOPPER, add all its children who have it
                 dirs.into_iter()
-                    .flat_map(|dir| self.get_dirs(dir))
+                    .flat_map(|dir| self.get_dirs(&dir))
                     .collect()
             }
         } else {

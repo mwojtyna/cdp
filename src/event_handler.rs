@@ -2,6 +2,7 @@ use crate::app::App;
 use anyhow::Result;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
 use std::time::Duration;
+use tui_input::backend::crossterm::EventHandler as CrosstermEventHandler;
 
 pub struct EventHandler {
     poll_timeout: Duration,
@@ -16,25 +17,40 @@ impl EventHandler {
         if event::poll(self.poll_timeout)? {
             if let Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
-                    match key.code {
-                        KeyCode::Char('j') | KeyCode::Down => {
-                            app.next();
-                        }
-                        KeyCode::Char('k') | KeyCode::Up => {
-                            app.prev();
-                        }
-                        KeyCode::Char('q') => {
-                            app.quit();
-                        }
-                        KeyCode::Char('c') => {
-                            if key.modifiers.contains(KeyModifiers::CONTROL) {
+                    if key.modifiers.contains(KeyModifiers::CONTROL) {
+                        match key.code {
+                            KeyCode::Char('j') => {
+                                app.next();
+                            }
+                            KeyCode::Char('k') => {
+                                app.prev();
+                            }
+                            KeyCode::Char('c') => {
                                 app.quit();
                             }
+                            _ => {
+                                app.input_state.handle_event(&Event::Key(key));
+                            }
+                        }
+                        return Ok(());
+                    }
+
+                    match key.code {
+                        KeyCode::Down => {
+                            app.next();
+                        }
+                        KeyCode::Up => {
+                            app.prev();
+                        }
+                        KeyCode::Esc => {
+                            app.quit();
                         }
                         KeyCode::Enter => {
                             app.submit();
                         }
-                        _ => {}
+                        _ => {
+                            app.input_state.handle_event(&Event::Key(key));
+                        }
                     }
                 }
             }
