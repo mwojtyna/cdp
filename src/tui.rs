@@ -34,36 +34,50 @@ impl Tui {
     }
 
     // TODO: Customizable colors
+    // TODO: Color the part of each path which matches the filter
     pub fn update(&mut self, app: &mut App) -> Result<()> {
         self.terminal.draw(|f| {
             app.filter();
-
-            let layout = Layout::new()
-                .constraints([Constraint::Min(0), Constraint::Max(1), Constraint::Max(1)])
-                .split(f.size());
 
             let list_items: Vec<ListItem> = app
                 .filtered_dirs
                 .iter()
                 .map(|dir| ListItem::new(dir.as_str()))
                 .collect();
-            let list = List::new(list_items)
-                .highlight_style(Style::default().bg(Color::White).fg(Color::Black).bold());
+            let list_items_len = list_items.len();
 
-            let count = Paragraph::new(format!("{}/{}", app.filtered_dirs.len(), app.dirs.len()))
+            let list = List::new(list_items)
+                .highlight_style(Style::default().bg(Color::White).fg(Color::Black).bold())
+                .highlight_symbol("> ");
+
+            let count = Paragraph::new(format!("  {}/{}", app.filtered_dirs.len(), app.dirs.len()))
                 .fg(Color::from_str("#AAAAAA").unwrap());
 
-            let input = Paragraph::new(app.input_state.value());
+            let input = Paragraph::new("> ".to_owned() + app.input_state.value()).bold();
 
-            f.render_stateful_widget(list, layout[0], &mut app.list_state);
-            f.render_widget(count, layout[1]);
-            f.render_widget(input, layout[2]);
+            let layout = Layout::new()
+                .constraints([
+                    Constraint::Max(
+                        f.size()
+                            .height
+                            .saturating_sub(list_items_len as u16)
+                            .saturating_sub(2),
+                    ),
+                    Constraint::Min(0),
+                    Constraint::Max(1),
+                    Constraint::Max(1),
+                ])
+                .split(f.size());
+
+            f.render_stateful_widget(list, layout[1], &mut app.list_state);
+            f.render_widget(count, layout[2]);
+            f.render_widget(input, layout[3]);
 
             f.set_cursor(
-                layout[2]
+                layout[3]
                     .x
-                    .saturating_add(app.input_state.visual_cursor() as u16),
-                layout[2].y,
+                    .saturating_add(2_u16.saturating_add(app.input_state.visual_cursor() as u16)),
+                layout[3].y,
             );
         })?;
         Ok(())
