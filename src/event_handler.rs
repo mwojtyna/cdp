@@ -1,6 +1,6 @@
 use crate::app::App;
 use anyhow::Result;
-use crossterm::event::{self, Event, KeyCode, KeyEventKind};
+use crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
 use std::time::Duration;
 
 pub struct EventHandler {
@@ -17,14 +17,19 @@ impl EventHandler {
             if let Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
                     match key.code {
-                        KeyCode::Char('j') => {
+                        KeyCode::Char('j') | KeyCode::Down => {
                             app.next();
                         }
-                        KeyCode::Char('k') => {
+                        KeyCode::Char('k') | KeyCode::Up => {
                             app.prev();
                         }
                         KeyCode::Char('q') => {
                             app.quit();
+                        }
+                        KeyCode::Char('c') => {
+                            if key.modifiers.contains(KeyModifiers::CONTROL) {
+                                app.quit();
+                            }
                         }
                         KeyCode::Enter => {
                             app.submit();
