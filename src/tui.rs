@@ -6,6 +6,7 @@ use crossterm::{
 };
 use ratatui::{prelude::*, widgets::*};
 use std::{
+    cmp::min,
     io::{stderr, Stderr},
     str::FromStr,
 };
@@ -50,8 +51,18 @@ impl Tui {
                 .highlight_style(Style::default().bg(Color::White).fg(Color::Black).bold())
                 .highlight_symbol("> ");
 
-            let count = Paragraph::new(format!("  {}/{}", app.filtered_dirs.len(), app.dirs.len()))
-                .fg(Color::from_str("#AAAAAA").unwrap());
+            let count = Paragraph::new(format!(
+                "  {}/{}",
+                min(
+                    app.list_state
+                        .selected()
+                        .expect("Nothing is selected. This should never happen.")
+                        + 1,
+                    app.filtered_dirs.len()
+                ),
+                app.filtered_dirs.len()
+            ))
+            .fg(Color::from_str("#AAAAAA").unwrap());
 
             let input = Paragraph::new("> ".to_owned() + app.input_state.value()).bold();
 

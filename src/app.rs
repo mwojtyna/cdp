@@ -20,7 +20,6 @@ impl App {
     pub fn new(root_dir: PathBuf, stopper: PathBuf) -> Self {
         let mut list_state = ListState::default();
         list_state.select(Some(0));
-
         Self {
             list_state,
             root_dir,
@@ -43,7 +42,12 @@ impl App {
             .collect();
 
         let last_filtered = self.filtered_dirs.len().saturating_sub(1);
-        if self.list_state.selected().unwrap() > last_filtered {
+        if self
+            .list_state
+            .selected()
+            .expect("Nothing is selected. This should never happen.")
+            > last_filtered
+        {
             self.list_state.select(Some(last_filtered));
         }
     }
