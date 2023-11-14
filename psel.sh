@@ -1,5 +1,5 @@
 #!/bin/bash
 
 psel() {
-	cd "$(/home/mati/developer/psel/target/debug/psel)" || exit 1
+	cd "$(cargo run -q ..)" || exit 1
 }

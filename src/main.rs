@@ -1,17 +1,16 @@
 use anyhow::Result;
 use app::App;
+use clap::Parser;
+use cli::Args;
 use event_handler::EventHandler;
 use ratatui::{prelude::CrosstermBackend, Terminal};
-use std::{io::stderr, path::PathBuf, str::FromStr, time::Duration};
+use std::{io::stderr, time::Duration};
 use tui::Tui;
 
 mod app;
+mod cli;
 mod event_handler;
 mod tui;
-
-// TODO: Configurable
-const ROOT_DIR: &str = "/home/mati/developer/";
-const STOPPER: &str = ".git";
 
 fn main() -> Result<()> {
     env_logger::builder()
@@ -19,11 +18,13 @@ fn main() -> Result<()> {
         .format_target(false)
         .init();
 
+    let args = Args::parse();
+
     let terminal = Terminal::new(CrosstermBackend::new(stderr()))?;
     let mut tui = Tui::new(terminal);
     tui.open()?;
 
-    let mut app = App::new(PathBuf::from_str(ROOT_DIR)?, PathBuf::from_str(STOPPER)?);
+    let mut app = App::new(args.dir, args.stopper);
     app.find_projects();
 
     let event_handler = EventHandler::new(Duration::from_millis(250));

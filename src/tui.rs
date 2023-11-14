@@ -33,7 +33,6 @@ impl Tui {
         Ok(())
     }
 
-    // TODO: Customizable colors
     pub fn update(&mut self, app: &mut App) -> Result<()> {
         fn get_path_line<'a>(path: &'a str, filter: &'a str) -> Line<'a> {
             let mut l = 0;

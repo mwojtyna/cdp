@@ -13,11 +13,11 @@ pub struct App {
     pub input_state: Input,
 
     root_dir: PathBuf,
-    stopper: PathBuf,
+    stopper: String,
 }
 
 impl App {
-    pub fn new(root_dir: PathBuf, stopper: PathBuf) -> Self {
+    pub fn new(root_dir: PathBuf, stopper: String) -> Self {
         let mut list_state = ListState::default();
         list_state.select(Some(0));
         Self {
@@ -97,10 +97,11 @@ impl App {
                 .any(|dir| {
                     dir.file_name()
                         .expect("The directory name is invalid. This should never happen.")
+                        .to_string_lossy()
                         == self.stopper
                 })
             {
-                // If the current dir has STOPPER, add it
+                // If the current dir has stopper, add it
                 let path_string = current.to_string_lossy().to_string();
                 vec![path_string]
             } else {
