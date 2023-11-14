@@ -35,20 +35,48 @@ impl Tui {
     }
 
     // TODO: Customizable colors
-    // TODO: Color the part of each path which matches the filter
     pub fn update(&mut self, app: &mut App) -> Result<()> {
+        fn get_path_line<'a>(path: &'a str, filter: &'a str) -> Line<'a> {
+            let mut l = 0;
+            let mut r = 0;
+            let mut largest_diff_l = 0;
+            let mut largest_diff_r = 0;
+
+            while r <= path.len() {
+                if r == path.len() || path.chars().nth(r) != filter.chars().nth(r - l) {
+                    if r - l > largest_diff_r - largest_diff_l {
+                        largest_diff_r = r;
+                        largest_diff_l = l;
+                    }
+                    r += 1;
+                    l = r;
+                    continue;
+                }
+                r += 1;
+            }
+
+            Line::from(vec![
+                Span::raw(&path[..largest_diff_l]),
+                Span::styled(
+                    &path[largest_diff_l..largest_diff_r],
+                    Style::default().fg(Color::Red),
+                ),
+                Span::raw(&path[largest_diff_r..]),
+            ])
+        }
+
         self.terminal.draw(|f| {
             app.filter();
 
             let list_items: Vec<ListItem> = app
                 .filtered_dirs
                 .iter()
-                .map(|dir| ListItem::new(dir.as_str()))
+                .map(|dir| ListItem::new(get_path_line(dir, app.input_state.value())))
                 .collect();
             let list_items_len = list_items.len();
 
             let list = List::new(list_items)
-                .highlight_style(Style::default().bg(Color::White).fg(Color::Black).bold())
+                .highlight_style(Style::default().bg(Color::White)./* fg(Color::Black). */bold())
                 .highlight_symbol("> ");
 
             let count = Paragraph::new(format!(
