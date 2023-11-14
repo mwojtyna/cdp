@@ -1,5 +1,5 @@
 #!/bin/bash
 
 psel() {
-	cd "$(cargo run -q ..)" || exit 1
+	cd "$(cargo run -q -- .. "$@")" || exit 1
 }
