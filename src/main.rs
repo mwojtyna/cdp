@@ -24,7 +24,7 @@ fn main() -> Result<()> {
     let mut tui = Tui::new(terminal);
     tui.open()?;
 
-    let mut app = App::new(args.dir, args.stopper);
+    let mut app = App::new(args);
     app.find_projects();
 
     let event_handler = EventHandler::new(Duration::from_millis(250));
