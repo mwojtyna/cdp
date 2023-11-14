@@ -8,7 +8,6 @@ use ratatui::{prelude::*, widgets::*};
 use std::{
     cmp::min,
     io::{stderr, Stderr},
-    str::FromStr,
 };
 
 type Terminal = ratatui::Terminal<CrosstermBackend<Stderr>>;
@@ -56,12 +55,12 @@ impl Tui {
             }
 
             Line::from(vec![
-                Span::raw(&path[..largest_diff_l]),
+                Span::raw(&path[..largest_diff_l]).dim(),
                 Span::styled(
                     &path[largest_diff_l..largest_diff_r],
-                    Style::default().fg(Color::Red),
+                    Style::default().fg(Color::Red).dim(),
                 ),
-                Span::raw(&path[largest_diff_r..]),
+                Span::raw(&path[largest_diff_r..]).dim(),
             ])
         }
 
@@ -76,7 +75,7 @@ impl Tui {
             let list_items_len = list_items.len();
 
             let list = List::new(list_items)
-                .highlight_style(Style::default().bg(Color::White)./* fg(Color::Black). */bold())
+                .highlight_style(Style::default().bold().not_dim())
                 .highlight_symbol("> ");
 
             let count = Paragraph::new(format!(
@@ -90,7 +89,7 @@ impl Tui {
                 ),
                 app.filtered_dirs.len()
             ))
-            .fg(Color::from_str("#AAAAAA").unwrap());
+            .fg(Color::White);
 
             let input = Paragraph::new("> ".to_owned() + app.input_state.value()).bold();
 
