@@ -1,5 +1,5 @@
+use ignore::{overrides::OverrideBuilder, WalkBuilder};
 use ratatui::widgets::ListState;
-use std::{collections::HashSet, fs, path::PathBuf};
 use tui_input::Input;
 
 use crate::cli::Args;
@@ -21,6 +21,7 @@ impl App {
     pub fn new(config: Args) -> Self {
         let mut list_state = ListState::default();
         list_state.select(Some(0));
+
         Self {
             list_state,
             config,
@@ -28,7 +29,7 @@ impl App {
         }
     }
     pub fn find_projects(&mut self) {
-        self.dirs = self.get_dirs(&self.config.dir);
+        self.dirs = self.walk_dirs();
         self.dirs.sort();
         self.filtered_dirs = self.dirs.clone();
     }
@@ -59,6 +60,10 @@ impl App {
     }
 
     pub fn next(&mut self) {
+        if self.dirs.is_empty() {
+            return;
+        }
+
         self.list_state.select(Some(
             (self
                 .list_state
@@ -69,6 +74,10 @@ impl App {
         ))
     }
     pub fn prev(&mut self) {
+        if self.dirs.is_empty() {
+            return;
+        }
+
         let mut selected = self
             .list_state
             .selected()
@@ -90,48 +99,27 @@ impl App {
         self.should_quit = true;
     }
 
-    // TODO: https://docs.rs/ignore/latest/ignore/gitignore/struct.GitignoreBuilder.html
-    fn get_dirs(&self, current: &PathBuf) -> Vec<String> {
-        let mut skip_files = HashSet::<String>::from_iter(self.config.ignore.clone());
-        skip_files.remove(&self.config.stopper);
+    fn walk_dirs(&self) -> Vec<String> {
+        let walk = WalkBuilder::new(&self.config.root_dir)
+            .hidden(false)
+            .follow_links(true)
+            .overrides(
+                OverrideBuilder::new(&self.config.root_dir)
+                    .add("!.git/")
+                    .unwrap()
+                    .add(&self.config.stopper)
+                    .expect("Invalid stopper file name")
+                    .build()
+                    .unwrap(),
+            )
+            .build();
 
-        if let Ok(files) = fs::read_dir(current) {
-            let files: Vec<PathBuf> = files
-                .filter_map(|file| file.ok().map(|entry| entry.path()))
-                .filter(|file| {
-                    !skip_files.contains(
-                        &file
-                            .file_name()
-                            .unwrap_or_default()
-                            .to_string_lossy()
-                            .to_string(),
-                    )
-                })
-                .collect();
-
-            if files
-                .iter()
-                // It's safe to unwrap because only a file can have a name of '..'
-                // https://doc.rust-lang.org/std/path/struct.Path.html#method.file_name
-                .any(|file| {
-                    file.file_name()
-                        .expect("The directory name is invalid. This should never happen.")
-                        .to_string_lossy()
-                        == self.config.stopper
-                })
-            {
-                // If the current dir has stopper, add it
-                let path_string = current.to_string_lossy().to_string();
-                vec![path_string]
-            } else {
-                // If the current dir doesn't have stopper, add all its children who have it
-                files
-                    .into_iter()
-                    .flat_map(|dir| self.get_dirs(&dir))
-                    .collect()
+        let mut out = Vec::new();
+        for dir in walk.flatten() {
+            if dir.file_name().to_string_lossy() == self.config.stopper {
+                out.push(dir.path().parent().unwrap().to_string_lossy().into_owned());
             }
-        } else {
-            vec![]
         }
+        out
     }
 }

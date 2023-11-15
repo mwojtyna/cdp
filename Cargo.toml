@@ -11,6 +11,7 @@ anyhow = "1.0.75"
 clap = { version = "4.4.8", features = ["derive"] }
 crossterm = "0.27.0"
 env_logger = "0.10.1"
+ignore = "0.4.20"
 log = "0.4.20"
 ratatui = "0.24.0"
 tui-input = "0.8.0"
