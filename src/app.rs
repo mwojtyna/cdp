@@ -90,6 +90,21 @@ impl App {
 
         self.list_state.select(Some(selected))
     }
+    pub fn first(&mut self) {
+        if self.dirs.is_empty() {
+            return;
+        }
+
+        self.list_state.select(Some(0))
+    }
+    pub fn last(&mut self) {
+        if self.dirs.is_empty() {
+            return;
+        }
+
+        self.list_state
+            .select(Some(self.dirs.len().saturating_sub(1)))
+    }
 
     pub fn submit(&mut self) {
         self.submitted = true;
@@ -117,7 +132,9 @@ impl App {
         let mut out = Vec::new();
         for dir in walk.flatten() {
             if dir.file_name().to_string_lossy() == self.config.stopper {
-                out.push(dir.path().parent().unwrap().to_string_lossy().into_owned());
+                if let Some(parent) = dir.path().parent() {
+                    out.push(parent.to_string_lossy().into_owned());
+                }
             }
         }
         out

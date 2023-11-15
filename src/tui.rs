@@ -17,6 +17,8 @@ pub struct Tui {
 }
 
 impl Tui {
+    const BOTTOM_BAR_HEIGHT: u16 = 2;
+
     pub fn new(terminal: Terminal) -> Self {
         Self { terminal }
     }
@@ -33,43 +35,65 @@ impl Tui {
         Ok(())
     }
 
-    pub fn update(&mut self, app: &mut App) -> Result<()> {
-        fn get_path_line<'a>(path: &'a str, filter: &'a str) -> Line<'a> {
-            let mut l = 0;
-            let mut r = 0;
-            let mut largest_diff_l = 0;
-            let mut largest_diff_r = 0;
+    fn get_path_line<'a>(
+        path: &'a str,
+        filter: &'a str,
+        index: usize,
+        scroll_offset: usize,
+        height: usize,
+    ) -> Line<'a> {
+        let dimmed = Style::default().dim();
 
-            while r <= path.len() {
-                if r == path.len() || path.chars().nth(r) != filter.chars().nth(r - l) {
-                    if r - l > largest_diff_r - largest_diff_l {
-                        largest_diff_r = r;
-                        largest_diff_l = l;
-                    }
-                    r += 1;
-                    l = r;
-                    continue;
-                }
-                r += 1;
-            }
-
-            Line::from(vec![
-                Span::raw(&path[..largest_diff_l]).dim(),
-                Span::styled(
-                    &path[largest_diff_l..largest_diff_r],
-                    Style::default().fg(Color::Red).dim(),
-                ),
-                Span::raw(&path[largest_diff_r..]).dim(),
-            ])
+        if index > height.saturating_sub(Self::BOTTOM_BAR_HEIGHT as usize) + scroll_offset
+            || index < scroll_offset
+        {
+            return Line::from(Span::styled(path, dimmed));
         }
 
+        let mut l = 0;
+        let mut r = 0;
+        let mut largest_diff_l = 0;
+        let mut largest_diff_r = 0;
+
+        while r <= path.len() {
+            if r == path.len() || path.chars().nth(r) != filter.chars().nth(r - l) {
+                if r - l > largest_diff_r - largest_diff_l {
+                    largest_diff_r = r;
+                    largest_diff_l = l;
+                }
+                r += 1;
+                l = r;
+                continue;
+            }
+            r += 1;
+        }
+
+        Line::from(vec![
+            Span::styled(&path[..largest_diff_l], dimmed),
+            Span::styled(
+                &path[largest_diff_l..largest_diff_r],
+                Style::default().fg(Color::Red).dim(),
+            ),
+            Span::styled(&path[largest_diff_r..], dimmed),
+        ])
+    }
+    pub fn update(&mut self, app: &mut App) -> Result<()> {
         self.terminal.draw(|f| {
             app.filter();
 
             let list_items: Vec<ListItem> = app
                 .filtered_dirs
                 .iter()
-                .map(|dir| ListItem::new(get_path_line(dir, app.input_state.value())))
+                .enumerate()
+                .map(|(i, dir)| {
+                    ListItem::new(Self::get_path_line(
+                        dir,
+                        app.input_state.value(),
+                        i,
+                        app.list_state.offset(),
+                        f.size().height as usize,
+                    ))
+                })
                 .collect();
             let list_items_len = list_items.len();
 
@@ -98,7 +122,7 @@ impl Tui {
                         f.size()
                             .height
                             .saturating_sub(list_items_len as u16)
-                            .saturating_sub(2),
+                            .saturating_sub(Self::BOTTOM_BAR_HEIGHT),
                     ),
                     Constraint::Min(0),
                     Constraint::Max(1),
@@ -111,9 +135,9 @@ impl Tui {
             f.render_widget(input, layout[3]);
 
             f.set_cursor(
-                layout[3]
-                    .x
-                    .saturating_add(2_u16.saturating_add(app.input_state.visual_cursor() as u16)),
+                layout[3].x.saturating_add(
+                    Self::BOTTOM_BAR_HEIGHT.saturating_add(app.input_state.visual_cursor() as u16),
+                ),
                 layout[3].y,
             );
         })?;

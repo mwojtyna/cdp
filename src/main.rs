@@ -13,11 +13,6 @@ mod event_handler;
 mod tui;
 
 fn main() -> Result<()> {
-    env_logger::builder()
-        .format_timestamp(None)
-        .format_target(false)
-        .init();
-
     let args = Args::parse();
 
     let terminal = Terminal::new(CrosstermBackend::new(stderr()))?;
