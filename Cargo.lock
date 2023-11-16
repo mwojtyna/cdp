@@ -390,6 +390,7 @@ dependencies = [
  "clap",
  "crossterm",
  "ignore",
+ "lazy_static",
  "num_cpus",
  "ratatui",
  "tui-input",
