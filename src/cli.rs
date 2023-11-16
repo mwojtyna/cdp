@@ -1,7 +1,7 @@
 use clap::Parser;
 use std::path::PathBuf;
 
-#[derive(Parser, Default, Clone)]
+#[derive(Parser, Default)]
 #[command(version)]
 pub struct Args {
     pub root_dir: PathBuf,

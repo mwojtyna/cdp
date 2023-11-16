@@ -1,13 +1,12 @@
-use crate::{cli::Args, visitor::VisitorBuilder};
-use ignore::{overrides::OverrideBuilder, WalkBuilder};
-use lazy_static::lazy_static;
-use ratatui::widgets::ListState;
-use std::sync::Mutex;
-use tui_input::Input;
+use std::{
+    collections::HashSet,
+    sync::{Arc, Mutex},
+};
 
-lazy_static! {
-    pub static ref PATHS: Mutex<Vec<String>> = Mutex::new(Vec::new());
-}
+use crate::cli::Args;
+use ignore::{overrides::OverrideBuilder, WalkBuilder, WalkState};
+use ratatui::widgets::ListState;
+use tui_input::Input;
 
 #[derive(Default)]
 pub struct App {
@@ -114,9 +113,6 @@ impl App {
     }
 
     pub fn submit(&mut self) {
-        if self.dirs.is_empty() {
-            return;
-        }
         self.submitted = true;
         self.should_quit = true;
     }
@@ -141,11 +137,31 @@ impl App {
             .threads(self.config.cpus)
             .build_parallel();
 
-        let mut builder = VisitorBuilder::new(self.config.clone());
-        walker.visit(&mut builder);
-        // println!("{:#?}", PATHS.lock().unwrap());
+        let set = Arc::new(Mutex::new(HashSet::new()));
+        let paths = Arc::new(Mutex::new(Vec::new()));
 
-        let paths = PATHS.lock().unwrap().clone();
+        walker.run(|| {
+            Box::new(|entry| {
+                if let Ok(path) = entry {
+                    if path.file_name().to_string_lossy() == self.config.stopper {
+                        if let Some(parent) = path.path().parent() {
+                            let parent = parent.to_string_lossy().into_owned();
+                            let mut set = set.lock().unwrap();
+
+                            if !set.contains(&parent) {
+                                set.insert(parent.clone());
+                                paths.lock().unwrap().push(parent);
+                            }
+                        }
+                    }
+                    WalkState::Continue
+                } else {
+                    WalkState::Skip
+                }
+            })
+        });
+
+        let paths = paths.lock().unwrap().clone();
         paths
     }
 }

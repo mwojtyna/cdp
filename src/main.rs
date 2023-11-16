@@ -11,7 +11,6 @@ mod app;
 mod cli;
 mod event_handler;
 mod tui;
-mod visitor;
 
 fn main() -> Result<()> {
     let args = Args::parse();
