@@ -33,9 +33,7 @@ impl App {
         }
     }
     pub fn find_projects(&mut self) {
-        let instant = std::time::Instant::now();
         self.dirs = self.walk_dirs();
-        println!("{}", instant.elapsed().as_secs_f32());
         self.dirs.sort();
         self.filtered_dirs = self.dirs.clone();
     }
@@ -120,7 +118,6 @@ impl App {
         self.should_quit = true;
     }
 
-    // TODO: Show progress info like in gdu
     fn walk_dirs(&self) -> Vec<String> {
         let walker = WalkBuilder::new(&self.config.root_dir)
             .hidden(false)
