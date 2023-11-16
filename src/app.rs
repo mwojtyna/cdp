@@ -1,11 +1,7 @@
-use std::{
-    collections::HashSet,
-    sync::{Arc, Mutex},
-};
-
 use crate::cli::Args;
 use ignore::{overrides::OverrideBuilder, WalkBuilder, WalkState};
 use ratatui::widgets::ListState;
+use std::sync::{Arc, Mutex};
 use tui_input::Input;
 
 #[derive(Default)]
@@ -46,14 +42,14 @@ impl App {
             .map(|dir| dir.to_string())
             .collect();
 
-        let last_filtered = self.filtered_dirs.len().saturating_sub(1);
+        let last = self.filtered_dirs.len().saturating_sub(1);
         if self
             .list_state
             .selected()
             .expect("Nothing is selected. This should never happen.")
-            > last_filtered
+            > last
         {
-            self.list_state.select(Some(last_filtered));
+            self.list_state.select(Some(last));
         }
     }
     pub fn get_selected(&self) -> &String {
@@ -64,7 +60,7 @@ impl App {
     }
 
     pub fn next(&mut self) {
-        if self.dirs.is_empty() {
+        if self.filtered_dirs.is_empty() {
             return;
         }
 
@@ -74,11 +70,11 @@ impl App {
                 .selected()
                 .expect("Nothing is selected. This should never happen.")
                 + 1)
-                % self.dirs.len(),
+                % self.filtered_dirs.len(),
         ))
     }
     pub fn prev(&mut self) {
-        if self.dirs.is_empty() {
+        if self.filtered_dirs.is_empty() {
             return;
         }
 
@@ -87,7 +83,7 @@ impl App {
             .selected()
             .expect("Nothing is selected. This should never happen.");
         if selected as isize - 1 < 0 {
-            selected = self.dirs.len() - 1;
+            selected = self.filtered_dirs.len() - 1;
         } else {
             selected -= 1;
         }
@@ -95,22 +91,25 @@ impl App {
         self.list_state.select(Some(selected))
     }
     pub fn first(&mut self) {
-        if self.dirs.is_empty() {
+        if self.filtered_dirs.is_empty() {
             return;
         }
 
         self.list_state.select(Some(0))
     }
     pub fn last(&mut self) {
-        if self.dirs.is_empty() {
+        if self.filtered_dirs.is_empty() {
             return;
         }
 
         self.list_state
-            .select(Some(self.dirs.len().saturating_sub(1)))
+            .select(Some(self.filtered_dirs.len().saturating_sub(1)))
     }
 
     pub fn submit(&mut self) {
+        if self.filtered_dirs.is_empty() {
+            return;
+        }
         self.submitted = true;
         self.should_quit = true;
     }
@@ -134,21 +133,16 @@ impl App {
             .threads(self.config.cpus)
             .build_parallel();
 
-        let set = Arc::new(Mutex::new(HashSet::new()));
         let paths = Arc::new(Mutex::new(Vec::new()));
-
         walker.run(|| {
             Box::new(|entry| {
                 if let Ok(path) = entry {
                     if path.file_name().to_string_lossy() == self.config.stopper {
                         if let Some(parent) = path.path().parent() {
-                            let parent = parent.to_string_lossy().into_owned();
-                            let mut set = set.lock().unwrap();
-
-                            if !set.contains(&parent) {
-                                set.insert(parent.clone());
-                                paths.lock().unwrap().push(parent);
-                            }
+                            paths
+                                .lock()
+                                .unwrap()
+                                .push(parent.to_string_lossy().into_owned());
                         }
                     }
                     WalkState::Continue
