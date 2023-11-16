@@ -15,6 +15,13 @@ pub struct Args {
 
     #[arg(
         long,
+        default_value_t = false,
+        help = "Continue searching in a directory subtree when a stopper file is found"
+    )]
+    pub greedy: bool,
+
+    #[arg(
+        long,
         default_value_t = num_cpus::get() / 2,
         help = "Amount of logical cores to use for searching the root_dir, defaults to half available"
     )]
