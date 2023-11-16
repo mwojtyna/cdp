@@ -42,14 +42,13 @@ impl App {
             .map(|dir| dir.to_string())
             .collect();
 
-        let last = self.filtered_dirs.len().saturating_sub(1);
         if self
             .list_state
             .selected()
             .expect("Nothing is selected. This should never happen.")
-            > last
+            > self.filtered_dirs.len().saturating_sub(1)
         {
-            self.list_state.select(Some(last));
+            self.list_state.select(Some(0));
         }
     }
     pub fn get_selected(&self) -> &String {
