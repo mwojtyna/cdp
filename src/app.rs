@@ -1,8 +1,12 @@
-use ignore::{overrides::OverrideBuilder, WalkBuilder};
-use ratatui::widgets::ListState;
-use tui_input::Input;
+use std::{
+    collections::HashSet,
+    sync::{Arc, Mutex},
+};
 
 use crate::cli::Args;
+use ignore::{overrides::OverrideBuilder, WalkBuilder, WalkState};
+use ratatui::widgets::ListState;
+use tui_input::Input;
 
 #[derive(Default)]
 pub struct App {
@@ -29,7 +33,9 @@ impl App {
         }
     }
     pub fn find_projects(&mut self) {
+        let instant = std::time::Instant::now();
         self.dirs = self.walk_dirs();
+        println!("{}", instant.elapsed().as_secs_f32());
         self.dirs.sort();
         self.filtered_dirs = self.dirs.clone();
     }
@@ -114,8 +120,9 @@ impl App {
         self.should_quit = true;
     }
 
+    // TODO: Show progress info like in gdu
     fn walk_dirs(&self) -> Vec<String> {
-        let walk = WalkBuilder::new(&self.config.root_dir)
+        let walker = WalkBuilder::new(&self.config.root_dir)
             .hidden(false)
             .follow_links(true)
             .overrides(
@@ -127,16 +134,34 @@ impl App {
                     .build()
                     .unwrap(),
             )
-            .build();
+            .threads(self.config.cpus)
+            .build_parallel();
 
-        let mut out = Vec::new();
-        for dir in walk.flatten() {
-            if dir.file_name().to_string_lossy() == self.config.stopper {
-                if let Some(parent) = dir.path().parent() {
-                    out.push(parent.to_string_lossy().into_owned());
+        let set = Arc::new(Mutex::new(HashSet::new()));
+        let paths = Arc::new(Mutex::new(Vec::new()));
+
+        walker.run(|| {
+            Box::new(|entry| {
+                if let Ok(path) = entry {
+                    if path.file_name().to_string_lossy() == self.config.stopper {
+                        if let Some(parent) = path.path().parent() {
+                            let parent = parent.to_string_lossy().into_owned();
+                            let mut set = set.lock().unwrap();
+
+                            if !set.contains(&parent) {
+                                set.insert(parent.clone());
+                                paths.lock().unwrap().push(parent);
+                            }
+                        }
+                    }
+                    WalkState::Continue
+                } else {
+                    WalkState::Skip
                 }
-            }
-        }
-        out
+            })
+        });
+
+        let paths = paths.lock().unwrap().clone();
+        paths
     }
 }

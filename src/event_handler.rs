@@ -22,19 +22,21 @@ impl EventHandler {
                             KeyCode::Char('j') => app.next(),
                             KeyCode::Char('k') => app.prev(),
                             KeyCode::Char('c') => app.quit(),
+                            KeyCode::Home => app.first(),
+                            KeyCode::End => app.last(),
                             _ => {
                                 app.input_state.handle_event(&Event::Key(key));
                             }
                         }
+
                         return Ok(());
                     }
+
                     match key.code {
                         KeyCode::Down => app.next(),
                         KeyCode::Up => app.prev(),
                         KeyCode::Esc => app.quit(),
                         KeyCode::Enter => app.submit(),
-                        KeyCode::Home => app.first(),
-                        KeyCode::End => app.last(),
                         _ => {
                             app.input_state.handle_event(&Event::Key(key));
                         }
