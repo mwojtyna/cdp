@@ -124,8 +124,6 @@ impl App {
                 OverrideBuilder::new(&self.config.root_dir)
                     .add("!.git/")
                     .unwrap()
-                    .add("!.git/*")
-                    .unwrap()
                     .add(&self.config.stopper)
                     .expect("Invalid stopper file name")
                     .build()
@@ -138,22 +136,15 @@ impl App {
         walker.run(|| {
             Box::new(|entry| {
                 if let Ok(path) = entry {
-                    if !self.config.greedy {
-                        if let Some(parent) = path.path().parent() {
-                            if parent.file_name().unwrap_or_default().to_string_lossy()
-                                == self.config.stopper
-                            {
-                                return WalkState::Skip;
-                            }
-                        }
-                    }
-
                     if path.file_name().to_string_lossy() == self.config.stopper {
                         if let Some(parent) = path.path().parent() {
                             paths
                                 .lock()
                                 .unwrap()
                                 .push(parent.to_string_lossy().into_owned());
+                            if !self.config.greedy {
+                                return WalkState::Skip;
+                            }
                         }
                     }
                     WalkState::Continue
