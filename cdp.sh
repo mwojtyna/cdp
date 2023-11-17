@@ -1,5 +1,5 @@
 #!/bin/bash
 
-psel() {
+cdp() {
 	cd "$(cargo run -q -- .. "$@")" || exit 1
 }

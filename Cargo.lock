@@ -118,6 +118,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df8670b8c7b9dae1793364eafadf7239c40d669904660c5960d74cfd80b46a53"
 
 [[package]]
+name = "cdp"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "crossterm",
+ "ignore",
+ "num_cpus",
+ "ratatui",
+ "tui-input",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -380,19 +393,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "134c189feb4956b20f6f547d2cf727d4c0fe06722b20a0eec87ed445a97f92da"
 dependencies = [
  "unicode-ident",
-]
-
-[[package]]
-name = "psel"
-version = "1.0.0"
-dependencies = [
- "anyhow",
- "clap",
- "crossterm",
- "ignore",
- "num_cpus",
- "ratatui",
- "tui-input",
 ]
 
 [[package]]

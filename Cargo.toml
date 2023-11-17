@@ -1,8 +1,8 @@
 [package]
-name = "psel"
+name = "cdp"
 version = "1.0.0"
 edition = "2021"
-repository = "https://github.com/matijas-05/psel/tree/main"
+repository = "https://github.com/matijas-05/cdp/tree/main"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
