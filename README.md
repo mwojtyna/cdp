@@ -14,15 +14,18 @@ For example, when `ROOT_DIR` is `~/.local/share` and filtering by `cmp`:
 
 ```bash
 cdp() {
-	cd "$(/path/to/cdp /path/to/ROOT_DIR "$@")" || exit 1
+	cd "$(/path/to/cdp /path/to/ROOT_DIR)"
 }
 ```
 3. Restart your terminal or source `.bashrc`.
 4. Run `cdp`.
 
-**TIP**: You can use `cd -` to go back to the previous directory.
+> [!TIP]
+> You can use `cd -` to go back to the previous directory after running `cdp`.
 
 ## Arguments
+> [!IMPORTANT]
+> These arguments only work when specified in the `$()` block in `.bashrc` as shown above.
 
 ```
 Usage: cdp [OPTIONS] <ROOT_DIR>
