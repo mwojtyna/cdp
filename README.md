@@ -7,7 +7,7 @@ Quickly **cd** into your **p**rojects.
 Searches recursively every folder from the specified `ROOT_DIR` until finding a `STOPPER` (`.git` folder by default).
 When the `STOPPER` has been found, adds its parent directory to a filterable list and continues searching.
 
-For example, when `ROOT_DIR` is `~/.local/share` and filtering by `cmp`:
+For example, when `ROOT_DIR` is `~/.local/share` and all folders in `~/.local/share/nvim/lazy` contain `.git` folders:
 ![example](https://i.imgur.com/M57wLmL.png)
 
 ## Usage
