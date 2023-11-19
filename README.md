@@ -1,7 +1,9 @@
 # cdp
+
 Quickly **cd** into your **p**rojects.
 
 ## How it works
+
 Searches recursively every folder from the specified `ROOT_DIR` until finding a `STOPPER` (`.git` folder by default).
 When the `STOPPER` has been found, adds its parent directory to a filterable list and continues searching.
 
@@ -9,6 +11,7 @@ For example, when `ROOT_DIR` is `~/.local/share` and filtering by `cmp`:
 ![example](https://i.imgur.com/M57wLmL.png)
 
 ## Usage
+
 1. Download the binary.
 2. Add the following to your `.bashrc` (or the equivalent file in other shells).
 
@@ -17,6 +20,7 @@ cdp() {
 	cd "$(/path/to/cdp /path/to/ROOT_DIR)"
 }
 ```
+
 3. Restart your terminal or source `.bashrc`.
 4. Run `cdp`.
 
@@ -24,6 +28,7 @@ cdp() {
 > You can use `cd -` to go back to the previous directory after running `cdp`.
 
 ## Arguments
+
 > [!IMPORTANT]
 > These arguments only work when specified in the `$()` block in `.bashrc` as shown above.
 
