@@ -8,6 +8,7 @@ Searches recursively every folder from the specified `ROOT_DIR` until finding a 
 When the `STOPPER` has been found, adds its parent directory to a filterable list and continues searching.
 
 For example, when `ROOT_DIR` is `~/.local/share` and all folders in `~/.local/share/nvim/lazy` contain `.git` folders:
+
 ![example](https://i.imgur.com/M57wLmL.png)
 
 ## Usage
