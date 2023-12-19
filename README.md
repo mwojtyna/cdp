@@ -9,7 +9,7 @@ When the `STOPPER` has been found, adds its parent directory to a filterable lis
 
 For example, when `ROOT_DIR` is `~/.local/share` and all folders in `~/.local/share/nvim/lazy` contain `.git` folders:
 
-![example](https://i.imgur.com/M57wLmL.png)
+![example](https://preview.redd.it/bew321bsf97c1.png?width=1030&format=png&auto=webp&s=7309f46cd918d8bcd7ca27505bf92c0b30c38c76)
 
 ## Usage
 
@@ -29,12 +29,13 @@ cdp() {
 > You can use `cd -` to go back to the previous directory after running `cdp`.
 
 ## Key bindings
- - Go up: `Up arrow`/`Ctrl+K`
- - Go down: `Down arrow`/`Ctrl+J`
- - Go to first entry: `Home`
- - Go to last entry: `End`
- - Exit: `Escape`/`Ctrl+C`
- - Accept: `Enter`
+
+-   Go up: `Up arrow`/`Ctrl+K`
+-   Go down: `Down arrow`/`Ctrl+J`
+-   Go to first entry: `Home`
+-   Go to last entry: `End`
+-   Exit: `Escape`/`Ctrl+C`
+-   Accept: `Enter`
 
 ## Arguments
 
@@ -51,6 +52,7 @@ Options:
       --stopper <STOPPER>  Search for directories containing this file [default: .git]
       --greedy             Continue searching in a directory subtree when a stopper file is found
       --cpus <CPUS>        Amount of logical cores to use for searching the root_dir, defaults to half available
+      --case-sensitive
   -h, --help               Print help
   -V, --version            Print version
 ```
