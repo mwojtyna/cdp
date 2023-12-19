@@ -28,6 +28,14 @@ cdp() {
 > [!TIP]
 > You can use `cd -` to go back to the previous directory after running `cdp`.
 
+## Key bindings
+ - Go up: `Up arrow`/`Ctrl+K`
+ - Go down: `Down arrow`/`Ctrl+J`
+ - Go to first entry: `Home`
+ - Go to last entry: `End`
+ - Exit: `Escape`/`Ctrl+C`
+ - Accept: `Enter`
+
 ## Arguments
 
 > [!IMPORTANT]
