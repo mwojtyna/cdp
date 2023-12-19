@@ -38,7 +38,14 @@ impl App {
         self.filtered_dirs = self
             .dirs
             .iter()
-            .filter(|dir| dir.contains(self.input_state.value()))
+            .filter(|dir| {
+                if self.config.case_sensitive {
+                    dir.contains(self.input_state.value())
+                } else {
+                    dir.to_lowercase()
+                        .contains(&self.input_state.value().to_lowercase())
+                }
+            })
             .map(|dir| dir.to_string())
             .collect();
 

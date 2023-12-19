@@ -14,13 +14,17 @@ type Terminal = ratatui::Terminal<CrosstermBackend<Stderr>>;
 
 pub struct Tui {
     terminal: Terminal,
+    case_sensitive: bool,
 }
 
 impl Tui {
     const BOTTOM_BAR_HEIGHT: u16 = 2;
 
-    pub fn new(terminal: Terminal) -> Self {
-        Self { terminal }
+    pub fn new(terminal: Terminal, case_sensitive: bool) -> Self {
+        Self {
+            terminal,
+            case_sensitive,
+        }
     }
 
     pub fn open(&mut self) -> Result<()> {
@@ -37,10 +41,11 @@ impl Tui {
 
     fn get_path_line<'a>(
         path: &'a str,
-        filter: &'a str,
+        filter: &str,
         index: usize,
         scroll_offset: usize,
         height: usize,
+        case_sensitive: bool,
     ) -> Line<'a> {
         let dimmed = Style::default().dim();
 
@@ -56,6 +61,12 @@ impl Tui {
         let mut largest_diff_r = 0;
 
         while r <= path.len() {
+            let (path, filter) = if case_sensitive {
+                (path.to_owned(), filter.to_owned())
+            } else {
+                (path.to_lowercase(), filter.to_lowercase())
+            };
+
             if r == path.len() || path.chars().nth(r) != filter.chars().nth(r - l) {
                 if r - l > largest_diff_r - largest_diff_l {
                     largest_diff_r = r;
@@ -77,6 +88,7 @@ impl Tui {
             Span::styled(&path[largest_diff_r..], dimmed),
         ])
     }
+
     pub fn update(&mut self, app: &mut App) -> Result<()> {
         self.terminal.draw(|f| {
             app.filter();
@@ -92,6 +104,7 @@ impl Tui {
                         i,
                         app.list_state.offset(),
                         f.size().height as usize,
+                        self.case_sensitive,
                     ))
                 })
                 .collect();

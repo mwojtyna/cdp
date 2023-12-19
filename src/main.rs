@@ -16,7 +16,7 @@ fn main() -> Result<()> {
     let args = Args::parse();
 
     let terminal = Terminal::new(CrosstermBackend::new(stderr()))?;
-    let mut tui = Tui::new(terminal);
+    let mut tui = Tui::new(terminal, args.case_sensitive);
     tui.open()?;
 
     let mut app = App::new(args);

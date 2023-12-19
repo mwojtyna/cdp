@@ -26,4 +26,7 @@ pub struct Args {
         help = "Amount of logical cores to use for searching the root_dir, defaults to half available"
     )]
     pub cpus: usize,
+
+    #[arg(long, default_value_t = false)]
+    pub case_sensitive: bool,
 }
