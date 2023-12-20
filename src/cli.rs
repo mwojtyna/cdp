@@ -2,14 +2,17 @@ use anyhow::{bail, Result};
 use clap::Parser;
 use std::path::PathBuf;
 
-#[derive(Parser, Default)]
+#[derive(Parser, Default, Clone)]
 #[command(version)]
 pub struct Args {
     #[arg(
-        value_parser = path_exists,
+        value_parser = valid_path,
         help = "Search recursively from this directory"
     )]
     pub root_dir: PathBuf,
+
+    #[arg(help = "Jump into the first directory matching this string (optional)")]
+    pub search_query: Option<String>,
 
     #[arg(
         long,
@@ -36,7 +39,7 @@ pub struct Args {
     pub case_sensitive: bool,
 }
 
-fn path_exists(path: &str) -> Result<PathBuf> {
+fn valid_path(path: &str) -> Result<PathBuf> {
     let path = PathBuf::from(path);
     if path.try_exists().unwrap_or_default() {
         if path.is_file() {

@@ -29,7 +29,7 @@ impl App {
         }
     }
     pub fn find_projects(&mut self) {
-        self.dirs = self.walk_dirs();
+        self.dirs = self.get_dirs();
         self.dirs.sort();
         self.filtered_dirs = self.dirs.clone();
     }
@@ -38,14 +38,7 @@ impl App {
         self.filtered_dirs = self
             .dirs
             .iter()
-            .filter(|dir| {
-                if self.config.case_sensitive {
-                    dir.contains(self.input_state.value())
-                } else {
-                    dir.to_lowercase()
-                        .contains(&self.input_state.value().to_lowercase())
-                }
-            })
+            .filter(|dir| self.matches(dir, self.input_state.value()))
             .map(|dir| dir.to_string())
             .collect();
 
@@ -63,6 +56,15 @@ impl App {
             .list_state
             .selected()
             .expect("Nothing is selected. This should never happen.")]
+    }
+    pub fn select_first_match(&mut self, query: &str) -> bool {
+        for (i, dir) in self.filtered_dirs.iter().enumerate() {
+            if self.matches(dir, query) {
+                self.list_state.select(Some(i));
+                return true;
+            }
+        }
+        false
     }
 
     pub fn next(&mut self) {
@@ -123,7 +125,7 @@ impl App {
         self.should_quit = true;
     }
 
-    fn walk_dirs(&self) -> Vec<String> {
+    fn get_dirs(&self) -> Vec<String> {
         let walker = WalkBuilder::new(&self.config.root_dir)
             .hidden(false)
             .follow_links(true)
@@ -163,5 +165,12 @@ impl App {
 
         let paths = paths.lock().unwrap().clone();
         paths
+    }
+    fn matches(&self, dir: &str, query: &str) -> bool {
+        if self.config.case_sensitive {
+            dir.contains(query)
+        } else {
+            dir.to_lowercase().contains(query.to_lowercase().as_str())
+        }
     }
 }

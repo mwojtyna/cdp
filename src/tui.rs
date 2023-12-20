@@ -60,14 +60,20 @@ impl Tui {
         let mut largest_diff_l = 0;
         let mut largest_diff_r = 0;
 
-        while r <= path.len() {
-            let (path, filter) = if case_sensitive {
-                (path.to_owned(), filter.to_owned())
-            } else {
-                (path.to_lowercase(), filter.to_lowercase())
-            };
+        let path_cased = if case_sensitive {
+            path.to_owned()
+        } else {
+            path.to_lowercase()
+        };
+        let filter_cased = if case_sensitive {
+            filter.to_owned()
+        } else {
+            filter.to_lowercase()
+        };
 
-            if r == path.len() || path.chars().nth(r) != filter.chars().nth(r - l) {
+        while r <= path.len() {
+            if r == path_cased.len() || path_cased.chars().nth(r) != filter_cased.chars().nth(r - l)
+            {
                 if r - l > largest_diff_r - largest_diff_l {
                     largest_diff_r = r;
                     largest_diff_l = l;

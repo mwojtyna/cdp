@@ -16,12 +16,13 @@ When the `STOPPER` has been found, adds its parent directory to a filterable lis
 
 ```bash
 cdp() {
-	cd "$(/path/to/cdp /path/to/ROOT_DIR)"
+	cd "$(/path/to/cdp /path/to/ROOT_DIR "$@")"
 }
 ```
 
 3. Restart your terminal or source `.bashrc`.
-4. Run `cdp`.
+4. Run `cdp` or run `cdp folder`, where `folder` is a string that will match one of the paths in the list.
+   This will immediately cd into that folder without bringing up the list UI.
 
 > [!TIP]
 > You can use `cd -` to go back to the previous directory after running `cdp`.
@@ -38,13 +39,16 @@ cdp() {
 ## Arguments
 
 > [!IMPORTANT]
-> These arguments only work when specified in the `$()` block in `.bashrc` as shown above.
+> If you want to run `--help` or `--version` commands, use the full path to the binary eg.
+> `/path/to/cdp --version`<br />
+> otherwise the output will be mangled. This is due to a limitation in `clap` rust library, which can't print the output of these flags to stderr.
 
 ```
-Usage: cdp [OPTIONS] <ROOT_DIR>
+Usage: cdp [OPTIONS] <ROOT_DIR> [SEARCH_QUERY]
 
 Arguments:
-  <ROOT_DIR>
+  <ROOT_DIR>      Search recursively from this directory
+  [SEARCH_QUERY]  Jump into the first directory matching this string (optional)
 
 Options:
       --stopper <STOPPER>  Search for directories containing this file [default: .git]

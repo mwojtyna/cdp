@@ -1,6 +1,6 @@
 use anyhow::Result;
 use app::App;
-use clap::Parser;
+use clap::{error::ErrorKind, CommandFactory, Parser};
 use cli::Args;
 use event_handler::EventHandler;
 use ratatui::{prelude::CrosstermBackend, Terminal};
@@ -14,6 +14,21 @@ mod tui;
 
 fn main() -> Result<()> {
     let args = Args::parse();
+
+    // If the user passed a search query, don't open TUI, just print the first match
+    if let Some(query) = args.clone().search_query {
+        let mut app = App::new(args);
+        app.find_projects();
+
+        if app.select_first_match(query.as_str()) {
+            print_result(app.get_selected());
+            return Ok(());
+        } else {
+            let mut cmd = Args::command();
+            cmd.error(ErrorKind::InvalidValue, "No match found for query")
+                .exit()
+        }
+    }
 
     let terminal = Terminal::new(CrosstermBackend::new(stderr()))?;
     let mut tui = Tui::new(terminal, args.case_sensitive);
@@ -31,8 +46,12 @@ fn main() -> Result<()> {
 
     tui.close()?;
     if app.submitted {
-        print!("{}", app.get_selected());
+        print_result(app.get_selected());
     }
 
     Ok(())
+}
+
+fn print_result(value: &str) {
+    println!("{}", value);
 }
