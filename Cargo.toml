@@ -1,6 +1,6 @@
 [package]
 name = "cdp"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 repository = "https://github.com/matijas-05/cdp/tree/main"
 
@@ -12,5 +12,5 @@ clap = { version = "4.4.8", features = ["derive"] }
 crossterm = "0.27.0"
 ignore = "0.4.20"
 num_cpus = "1.16.0"
-ratatui = "0.24.0"
+ratatui = "0.25.0"
 tui-input = "0.8.0"

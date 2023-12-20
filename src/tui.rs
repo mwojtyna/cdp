@@ -129,8 +129,9 @@ impl Tui {
 
             let input = Paragraph::new("> ".to_owned() + app.input_state.value()).bold();
 
-            let layout = Layout::new()
-                .constraints([
+            let layout = Layout::new(
+                Direction::Vertical,
+                [
                     Constraint::Max(
                         f.size()
                             .height
@@ -140,8 +141,9 @@ impl Tui {
                     Constraint::Min(0),
                     Constraint::Max(1),
                     Constraint::Max(1),
-                ])
-                .split(f.size());
+                ],
+            )
+            .split(f.size());
 
             f.render_stateful_widget(list, layout[1], &mut app.list_state);
             f.render_widget(count, layout[2]);
